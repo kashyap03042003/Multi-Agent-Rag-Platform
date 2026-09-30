@@ -1,0 +1,24 @@
+# Secrets
+.env
+.env.*
+!.env.example
+sa-key.json
+*.pem
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.ipynb_checkpoints/
+
+# Model caches and tool state
+.cache/
+.deepeval/
+
+# Data and generated artifacts
+DATA/
+evals/results/
+
+# OS
+.DS_Store

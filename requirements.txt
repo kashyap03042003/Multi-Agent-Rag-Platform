@@ -1,0 +1,48 @@
+# ---- Core (Steps 1-3: setup, ingestion, agentic RAG) ----
+python-dotenv
+pydantic-settings
+
+langchain
+langchain-core
+langchain-text-splitters
+langgraph
+langchain-groq
+groq
+
+qdrant-client
+fastembed
+flashrank
+
+pypdf
+python-docx
+python-pptx
+beautifulsoup4
+
+# ---- API + UI (monolith) ----
+fastapi
+uvicorn[standard]
+streamlit
+requests
+
+# ---- Notebooks for experiments ----
+ipykernel
+
+# ---- Guardrails ----
+nemoguardrails
+
+# ---- LLM gateway (Portkey) ----
+portkey-ai
+langchain-openai
+
+# ---- Evaluation ----
+deepeval
+ragas
+
+# ---- Scalable version: persistent memory + caching ----
+# psycopg[binary]
+# langgraph-checkpoint-postgres
+# redis
+# redisvl
+
+# ---- AWS deployment ----
+# boto3
