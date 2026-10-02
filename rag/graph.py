@@ -1,6 +1,6 @@
 from langgraph.graph import StateGraph, START, END
-from langgraph.checkpoint.memory import MemorySaver
 from config.settings import settings
+from rag.memory import get_checkpointer
 from rag.state import AgentState
 from rag.nodes import planner, retriever, refine_query, responder
 
@@ -28,7 +28,7 @@ def build_graph():
     g.add_edge("refine_query", "retriever")
     g.add_edge("responder", END)
 
-    return g.compile(checkpointer=MemorySaver())
+    return g.compile(checkpointer=get_checkpointer())
 
 
 graph = build_graph()

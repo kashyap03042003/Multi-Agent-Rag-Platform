@@ -39,10 +39,11 @@ deepeval
 ragas
 
 # ---- Scalable version: persistent memory + caching ----
-# psycopg[binary]
-# langgraph-checkpoint-postgres
-# redis
-# redisvl
+psycopg[binary]
+psycopg-pool
+langgraph-checkpoint-postgres
+redis
+redisvl
 
 # ---- AWS deployment ----
 # boto3

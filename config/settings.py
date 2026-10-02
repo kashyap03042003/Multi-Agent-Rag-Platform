@@ -18,6 +18,14 @@ class Settings(BaseSettings):
     groq_api_key: str = ""
     portkey_api_key: str
     portkey_config_id: str
+    database_url: str = ""
+    redis_url: str = ""
+    cache_distance_threshold: float = 0.1
+    cache_ttl_seconds: int = 86400
+    redis_url: str = ""
+    cache_distance_threshold: float = 0.1
+    cache_ttl_seconds: int = 86400
+
 
 
 settings = Settings()

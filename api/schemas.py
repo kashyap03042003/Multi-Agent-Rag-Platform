@@ -18,4 +18,5 @@ class ChatResponse(BaseModel):
     sources: list[Source]
     blocked: bool = False
     trace_id: str = ""
+    cached: bool = False
 
