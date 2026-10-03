@@ -49,3 +49,11 @@ def store(question: str, answer: str, search_query: str, sources: list[dict]) ->
         )
     except Exception:
         logger.exception("Semantic cache store failed")
+
+def clear() -> None:
+    if not settings.redis_url:
+        return
+    try:
+        get_cache().clear()
+    except Exception:
+        logger.exception("Semantic cache clear failed")

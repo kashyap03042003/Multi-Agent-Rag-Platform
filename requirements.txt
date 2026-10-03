@@ -47,3 +47,5 @@ redisvl
 
 # ---- AWS deployment ----
 # boto3
+
+watchdog

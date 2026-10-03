@@ -1,8 +1,12 @@
 import uuid
 from functools import lru_cache
 from qdrant_client import QdrantClient
-from qdrant_client.models import Distance, VectorParams, PointStruct
 from config.settings import settings
+from qdrant_client.models import (
+    Distance, FieldCondition, Filter, FilterSelector, HasIdCondition,
+    MatchValue, PayloadSchemaType, PointStruct, VectorParams,
+)
+
 
 @lru_cache
 def get_client() -> QdrantClient:
@@ -33,3 +37,24 @@ def search(query_vector: list[float], limit: int) -> list[dict]:
         with_payload=True,
     )
     return [{**p.payload, "vector_score": p.score} for p in result.points]
+
+
+def ensure_source_index() -> None:
+    get_client().create_payload_index(
+        collection_name=settings.qdrant_collection,
+        field_name="source",
+        field_schema=PayloadSchemaType.KEYWORD,
+    )
+
+
+def delete_stale(source: str, keep_ids: list[str]) -> None:
+    must_not = [HasIdCondition(has_id=keep_ids)] if keep_ids else []
+    get_client().delete(
+        collection_name=settings.qdrant_collection,
+        points_selector=FilterSelector(
+            filter=Filter(
+                must=[FieldCondition(key="source", match=MatchValue(value=source))],
+                must_not=must_not,
+            )
+        ),
+    )

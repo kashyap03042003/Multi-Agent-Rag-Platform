@@ -45,29 +45,39 @@ READERS = {
 }
 
 
+def is_supported(rel: Path) -> bool:
+    is_temp = rel.name.startswith((".", "~$"))
+    return rel.suffix.lower() in READERS and not is_temp and not (SKIP_DIRS & set(rel.parts))
+
+
+def load_file(path: Path, root: Path) -> list[dict]:
+    rel = path.relative_to(root)
+    sections = READERS[path.suffix.lower()](path)
+    return [
+        {
+            "text": text,
+            "source": str(rel),
+            "category": rel.parts[0],
+            "format": path.suffix.lower().lstrip("."),
+            "page": page,
+        }
+        for page, text in sections
+        if text.strip()
+    ]
+
+
 def load_documents(data_dir: str) -> list[dict]:
     root = Path(data_dir)
     pages = []
     for path in sorted(root.rglob("*")):
         rel = path.relative_to(root)
-        reader = READERS.get(path.suffix.lower())
-        if reader is None or SKIP_DIRS & set(rel.parts):
+        if not is_supported(rel):
             continue
         try:
-            sections = reader(path)
+            file_pages = load_file(path, root)
         except Exception as e:
             print(f"Skipped {rel}: {e}")
             continue
-        for page, text in sections:
-            if text.strip():
-                pages.append({
-                    "text": text,
-                    "source": str(rel),
-                    "category": rel.parts[0],
-                    "format": path.suffix.lower().lstrip("."),
-                    "page": page,
-                })
-        print(f"Loaded {rel} ({len(sections)} sections)")
+        pages.extend(file_pages)
+        print(f"Loaded {rel} ({len(file_pages)} sections)")
     return pages
-
-
