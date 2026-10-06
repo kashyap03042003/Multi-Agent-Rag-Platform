@@ -1,51 +1,43 @@
-# ---- Core (Steps 1-3: setup, ingestion, agentic RAG) ----
+# Runtime dependencies for the backend image (api, worker, watcher).
+# Dev-only tools live in requirements-dev.txt; the UI image uses requirements-ui.txt.
+
+# ---- Config ----
 python-dotenv
 pydantic-settings
 
+# ---- Agent + LLM ----
 langchain
 langchain-core
 langchain-text-splitters
 langgraph
 langchain-groq
 groq
+langchain-openai
+portkey-ai
 
+# ---- Retrieval ----
 qdrant-client
 fastembed
 flashrank
 
+# ---- Ingestion ----
 pypdf
 python-docx
 python-pptx
 beautifulsoup4
+watchdog
 
-# ---- API + UI (monolith) ----
+# ---- API ----
 fastapi
 uvicorn[standard]
-streamlit
 requests
-
-# ---- Notebooks for experiments ----
-ipykernel
 
 # ---- Guardrails ----
 nemoguardrails
 
-# ---- LLM gateway (Portkey) ----
-portkey-ai
-langchain-openai
-
-# ---- Evaluation ----
-deepeval
-ragas
-
-# ---- Scalable version: persistent memory + caching ----
+# ---- Memory, cache, queue, rate limiting ----
 psycopg[binary]
 psycopg-pool
 langgraph-checkpoint-postgres
 redis
 redisvl
-
-# ---- AWS deployment ----
-# boto3
-
-watchdog

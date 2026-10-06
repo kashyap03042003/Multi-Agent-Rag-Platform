@@ -3,6 +3,7 @@ import time
 from pathlib import Path
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
+from watchdog.observers.polling import PollingObserver
 from config.settings import settings
 from ingestion.events import get_redis, publish
 from ingestion.loader import is_supported
@@ -42,7 +43,8 @@ class DataDirHandler(FileSystemEventHandler):
 
 def main():
     root = Path(settings.data_dir)
-    observer = Observer()
+    # Bind-mounted folders on macOS don't forward file events into containers, so poll there.
+    observer = PollingObserver(timeout=5) if settings.watch_polling else Observer()
     observer.schedule(DataDirHandler(root), str(root), recursive=True)
     observer.start()
     logger.info("Watching %s", root.resolve())

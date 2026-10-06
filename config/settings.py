@@ -22,9 +22,8 @@ class Settings(BaseSettings):
     redis_url: str = ""
     cache_distance_threshold: float = 0.1
     cache_ttl_seconds: int = 86400
-    redis_url: str = ""
-    cache_distance_threshold: float = 0.1
-    cache_ttl_seconds: int = 86400
+    rate_limit_per_minute: int = 10
+    watch_polling: bool = False
 
 
 

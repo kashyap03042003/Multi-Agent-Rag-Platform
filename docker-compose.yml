@@ -1,7 +1,59 @@
+x-backend: &backend
+  build: .
+  image: rag-backend:latest
+  env_file: .env
+  environment: &backend-env
+    DATABASE_URL: postgresql://rag:rag@postgres:5432/rag
+    REDIS_URL: redis://redis:6379
+    DATA_DIR: /app/DATA
+  depends_on:
+    postgres:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+  restart: unless-stopped
+
 services:
+  api:
+    <<: *backend
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 10s
+      start_period: 120s
+      retries: 5
+
+  worker:
+    <<: *backend
+    command: ["python", "-m", "ingestion.worker"]
+    volumes:
+      - ./DATA:/app/DATA:ro
+
+  watcher:
+    <<: *backend
+    command: ["python", "-m", "ingestion.watcher"]
+    environment:
+      <<: *backend-env
+      WATCH_POLLING: "true"
+    volumes:
+      - ./DATA:/app/DATA:ro
+
+  ui:
+    build:
+      context: .
+      dockerfile: ui/Dockerfile
+    environment:
+      API_URL: http://api:8000
+    ports:
+      - "8501:8501"
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+
   postgres:
     image: postgres:16
-    container_name: rag-postgres
     environment:
       POSTGRES_USER: rag
       POSTGRES_PASSWORD: rag
@@ -14,9 +66,9 @@ services:
       test: ["CMD-SHELL", "pg_isready -U rag"]
       interval: 5s
       retries: 10
+
   redis:
     image: redis/redis-stack-server:latest
-    container_name: rag-redis
     ports:
       - "6379:6379"
     volumes:
@@ -25,9 +77,7 @@ services:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
       retries: 10
-    
 
 volumes:
   pgdata:
   redisdata:
-

@@ -1,20 +1,19 @@
 import logging
 from contextlib import asynccontextmanager
 import uuid
-from fastapi import FastAPI, HTTPException
-from langchain_core.messages import HumanMessage
-from api.schemas import ChatRequest, ChatResponse, Source
-from rag.graph import graph
-from services.embeddings import get_embedder
-from services.rerank_service import get_ranker
+from fastapi import FastAPI, HTTPException, Request
 from langchain_core.messages import AIMessage, HumanMessage
-from services.guardrails_service import get_rails, check_input, check_output
+from api.schemas import ChatRequest, ChatResponse, Source
 from config.settings import settings
+from rag.graph import graph
 from rag.memory import get_pool
+from services import rate_limit
 from services.cache_service import get_cache, lookup, store
+from services.embeddings import get_embedder
+from services.guardrails_service import get_rails, check_input, check_output
+from services.rerank_service import get_ranker
 
-
-
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")
 logger = logging.getLogger("api")
 
 
@@ -40,7 +39,13 @@ def health():
 
 
 @app.post("/chat", response_model=ChatResponse)
-def chat(req: ChatRequest):
+def chat(req: ChatRequest, request: Request):
+    # Must stay outside the try below, or the 429 would be swallowed into a 500.
+    client_id = request.client.host if request.client else "unknown"
+    if not rate_limit.allow(client_id):
+        logger.warning("Rate limit exceeded for %s", client_id)
+        raise HTTPException(status_code=429, detail="Too many requests. Try again in a minute.",
+                            headers={"Retry-After": "60"})
     trace_id = str(uuid.uuid4())
     config = {"configurable": {"thread_id": req.thread_id, "trace_id": trace_id}}
     try:

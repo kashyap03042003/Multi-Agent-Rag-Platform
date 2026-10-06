@@ -41,12 +41,17 @@ if prompt := st.chat_input("Ask about Kubernetes..."):
 
     with st.chat_message("assistant"):
         with st.spinner("Thinking..."):
+            client_ip = st.context.headers.get("X-Forwarded-For", "")
             try:
                 resp = requests.post(
                     f"{API_URL}/chat",
                     json={"thread_id": st.session_state.thread_id, "message": prompt},
+                    headers={"X-Forwarded-For": client_ip} if client_ip else {},
                     timeout=120,
                 )
+                if resp.status_code == 429:
+                    st.warning("You're sending messages too fast. Please wait a minute.")
+                    st.stop()
                 resp.raise_for_status()
                 data = resp.json()
             except requests.RequestException as e:
